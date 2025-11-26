@@ -1,0 +1,49 @@
+################################################################################
+
+# We want Exclude directives from different config files to get merged, not overwritten
+inherit_mode:
+  merge:
+    - Exclude
+
+# Use the same plugins that Standard uses
+plugins:
+  - standard-custom
+  - standard-performance
+  - rubocop-performance
+  - rubocop-rails
+  - rubocop-rspec
+  - rubocop-rspec_rails
+  - rubocop-rake
+
+# Inherit Standard's base configuration
+inherit_gem:
+  standard: config/base.yml
+  standard-performance: config/base.yml
+  standard-custom: config/base.yml
+  standard-rails: config/base.yml
+
+# Global options
+AllCops:
+  Exclude:
+    - "spec/dummy/**/*"
+  TargetRubyVersion: 3.2
+  NewCops: enable
+
+################################################################################
+
+Metrics:
+  Enabled: true
+
+RSpec/ExampleLength:
+  Enabled: false
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+RSpec/MultipleExpectations:
+  Enabled: false
+RSpec/NestedGroups:
+  Enabled: false
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: diff_comma
+
+################################################################################

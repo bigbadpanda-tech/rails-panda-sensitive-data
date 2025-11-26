@@ -2,22 +2,43 @@ $LOAD_PATH.push File.expand_path("lib", __dir__)
 
 require "rails_panda_sensitive_data/version"
 
-Gem::Specification.new do |s|
-  s.required_ruby_version = ">= 3.2"
+Gem::Specification.new do |spec|
+  spec.required_ruby_version = ">= 3.2"
 
-  s.name = "rails-panda-sensitive-data"
-  s.version = RailsPanda::SensitiveData::VERSION
-  s.authors = ["João Saraiva"]
-  s.email = ["panda@bigbadpanda.com"]
-  s.homepage = "https://github.com/jsaraiva/rails-panda-sensitive-data"
-  s.summary = "Code that Rails applications use for dealing with sensitive data (e.g., GDPR)."
-  s.description = "Code that Rails applications use for dealing with sensitive data (e.g., GDPR)."
-  s.license = "MIT"
+  spec.name = "rails-panda-sensitive-data"
+  spec.version = RailsPanda::SensitiveData::VERSION
+  spec.authors = ["João Saraiva"]
+  spec.email = ["panda@bigbadpanda.com"]
+  spec.homepage = "https://github.com/bigbadpanda-tech/rails-panda-sensitive-data"
+  spec.summary = "Code that Rails applications use for dealing with sensitive data (e.g., GDPR)."
+  spec.description = "Code that Rails applications use for dealing with sensitive data (e.g., GDPR)."
+  spec.license = "MIT"
+  spec.metadata["rubygems_mfa_required"] = "true"
 
-  s.files = Dir["{app,config,db,lib}/**/*", "LICENSE", "Rakefile"]
-  # s.test_files = Dir["test/**/*"]
+  spec.files = Dir[
+    "lib/**/*",
+    "rails_panda_sensitive_data.gemspec",
+    "Gemfile",
+    # "Rakefile",
+    "LICENSE",
+    "CHANGELOG.md",
+    "README.md"
+  ]
 
-  s.add_dependency "rails", ">= 7.0.0"
+  spec.add_dependency "rails", ">= 7.0.0"
 
-  s.metadata["rubygems_mfa_required"] = "true"
+  # spec.add_development_dependency "combustion"
+  spec.add_development_dependency "rake"
+  spec.add_development_dependency "rspec"
+  spec.add_development_dependency "rspec-rails"
+  spec.add_development_dependency "simplecov"
+  spec.add_development_dependency "rubocop"
+  spec.add_development_dependency "rubocop-rails"
+  spec.add_development_dependency "rubocop-rspec"
+  spec.add_development_dependency "rubocop-rspec_rails"
+  spec.add_development_dependency "rubocop-rake"
+  spec.add_development_dependency "rubocop-performance"
+  spec.add_development_dependency "standard"
+  spec.add_development_dependency "standard-rails"
+  spec.add_development_dependency "sqlite3"
 end

@@ -18,8 +18,8 @@ module RailsPanda
         end
 
         def set_encryption_key
-          _encryption_key = encryption_key
-          if _encryption_key.nil? || _encryption_key == ""
+          encr_key = encryption_key
+          if encr_key.nil? || encr_key == ""
             # 8 chars
             self.encryption_key = SecureRandom.hex(4)
           end
@@ -27,9 +27,7 @@ module RailsPanda
 
         def sensitive_data_encryption_key
           set_encryption_key
-          the_key =
-            encryption_key +
-            ::RailsPanda::SensitiveData.application_sensitive_data_encryption_key
+          encryption_key + ::RailsPanda::SensitiveData.application_sensitive_data_encryption_key
         end
 
         class_methods do

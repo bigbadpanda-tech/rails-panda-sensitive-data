@@ -11,89 +11,114 @@ module RailsPanda
 
         class_methods do
           def encrypts(*attributes, **options)
-            return if attributes.blank?
+            raise ArgumentError, "encrypts must be called with at least one attribute" if attributes.blank?
 
-            encryptor = options.delete(:encryptor)
-            key_provider = options.delete(:key_provider)
-            key = options.delete(:key)
+            super_options = options.dup
 
-            empty_string_visible_in_db =
-              options.delete(:empty_string_visible_in_db) != false
-            store_nil_as_empty_string =
-              options.delete(:store_nil_as_empty_string) != false
+            # If rails_default is true, skip our custom logic and use Rails' standard behavior
+            unless super_options.delete(:rails_default)
+              nil_visible_in_db = super_options.delete(:nil_visible_in_db) != false
+              empty_string_visible_in_db = super_options.delete(:empty_string_visible_in_db) != false
+              whitespace_visible_in_db = super_options.delete(:whitespace_visible_in_db) != false
+              needs_custom_encryptor =
+                nil_visible_in_db ||
+                empty_string_visible_in_db ||
+                whitespace_visible_in_db
 
-            if key.nil?
-              key_provider ||= ::RailsPanda::SensitiveData::Encryption::KeyProvider.new
+              # Pass encryptor as a keyword argument - Rails stores it in context_properties internally and retrieves it from there when needed
+              if needs_custom_encryptor && !super_options[:encryptor]
+                super_options[:encryptor] =
+                  ::RailsPanda::SensitiveData::Encryption::Encryptor.new(
+                    empty_string_visible_in_db:,
+                    nil_visible_in_db:,
+                    whitespace_visible_in_db:
+                  )
+              end
             end
 
-            encryptor ||=
-              ::RailsPanda::SensitiveData::Encryption::Encryptor.new(
-                empty_string_visible_in_db:,
-                store_nil_as_empty_string:
-              )
-
-            super(
-              *attributes,
-              encryptor:,
-              key_provider:,
-              key:,
-              **options
-            )
+            super(*attributes, **super_options)
           end
 
-          def has_sensitive_data(*attributes, **options) # rubocop:disable Naming/PredicateName
-            return if attributes.blank?
+          def has_sensitive_data(*attributes, **options)
+            raise ArgumentError, "has_sensitive_data must be called with at least one attribute" if attributes.blank?
 
-            in_attribute = options.delete(:in)&.to_sym || :sensitive_data
+            super_options = options.dup
+
+            in_attribute = super_options.delete(:in)&.to_sym || :sensitive_data
 
             unless @__has_registered_sensitive_data_encrypted_attribute
               serialize(in_attribute, type: Hash, coder: YAML)
-              encrypts(in_attribute, **options)
+              encrypts(in_attribute, **super_options)
+
               @__has_registered_sensitive_data_encrypted_attribute = true
             end
 
-            attributes.each do |attribute_name|
-              attribute_name = attribute_name.to_sym
+            attributes.each do |attr|
+              attr = attr.to_sym
 
-              define_method attribute_name do
+              define_method attr do
                 the_hash = send(in_attribute)
-                the_hash[attribute_name] if the_hash.present?
+                return if the_hash.blank?
+                the_hash[attr]
               end
 
-              define_method "#{attribute_name}=" do |the_value|
+              define_method "#{attr}=" do |the_value|
                 the_hash = send(in_attribute)
-                the_hash = {} if the_hash.blank?
+                the_hash ||= {}
 
                 if the_value.nil?
-                  the_hash.delete attribute_name
+                  the_hash.delete attr
                 else
-                  the_hash[attribute_name] = the_value
+                  the_hash[attr] = the_value
                 end
 
                 send("#{in_attribute}=", the_hash)
               end
 
-              attribute_name_in_database = :"#{attribute_name}_in_database"
-              attribute_name_before_last_save = :"#{attribute_name}_before_last_save"
+              attr_in_database = :"#{attr}_in_database"
+              attr_before_last_save = :"#{attr}_before_last_save"
+              saved_change_to_attr = :"saved_change_to_#{attr}"
 
-              define_method attribute_name_before_last_save do
-                send("#{in_attribute}_before_last_save")
-                  .then(&:presence)
-                  &.dig(attribute_name)
+              define_method attr_in_database do
+                attribute_in_database(in_attribute)&.dig(attr)
               end
 
-              define_method attribute_name_in_database do
-                send("#{in_attribute}_in_database")
-                  .then(&:presence)
-                  &.dig(attribute_name)
+              # Returns nil until after a save, and nil after reload (Rails clears mutations_before_last_save on reload)
+              define_method attr_before_last_save do
+                attribute_before_last_save(in_attribute)&.dig(attr)
               end
 
-              define_method "saved_change_to_#{attribute_name}?" do
-                send(attribute_name) != send(attribute_name_before_last_save)
+              # attribute_changed? - Has this attribute changed from the database value?
+              define_method "#{attr}_changed?" do
+                send(attr) != send(attr_in_database)
               end
 
-              define_method "#{attribute_name}_changed?" do
-                send(attribute_name) != send(attribute_name_in_database)
+              # saved_change_to_attribute - Returns the change to an attribute during the last save
+              define_method saved_change_to_attr do
+                before = send(attr_before_last_save)
+                current = send(attr)
+                return nil if before.nil? || before == current
+                [before, current]
+              end
+
+              # saved_change_to_attribute? - Did this attribute change when we last saved?
+              # Returns false if before_last_save is nil (e.g., after reload or before any save)
+              define_method "#{saved_change_to_attr}?" do
+                before = send(attr_before_last_save)
+                !before.nil? && send(attr) != before # No saved change if before_last_save is nil
+              end
+
+              # will_save_change_to_attribute? - Will this attribute change the next time we save?
+              define_method "will_save_change_to_#{attr}?" do
+                send(attr) != send(attr_in_database)
+              end
+
+              # attribute_change_to_be_saved - Returns the change to an attribute that will be persisted during the next save
+              define_method "#{attr}_change_to_be_saved" do
+                in_db = send(attr_in_database)
+                current = send(attr)
+                return nil if in_db.nil? || in_db == current
+                [in_db, current]
               end
             end
           end
@@ -101,4 +126,9 @@ module RailsPanda
       end
     end
   end
+end
+
+# Auto-include the module in all ActiveRecord::Base models
+ActiveSupport.on_load(:active_record) do
+  include RailsPanda::SensitiveData::Models::ActiveRecord
 end
