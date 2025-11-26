@@ -44,6 +44,6 @@ RSpec/NestedGroups:
   Enabled: false
 
 Style/TrailingCommaInArrayLiteral:
-  EnforcedStyleForMultiline: diff_comma
+  EnforcedStyleForMultiline: comma
 
 ################################################################################
