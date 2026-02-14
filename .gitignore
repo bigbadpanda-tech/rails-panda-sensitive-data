@@ -1,18 +1,13 @@
 .DS_Store
 
-.bundle/
+/.bundle/
 
-log/*
-!log/.keep
-tmp/*
-!tmp/.keep
+/*.gem
+/coverage/
+/measurement/
+/pkg/
 
-*.gem
-coverage/*
-measurement/*
-pkg/*
+/.env
 
-.env
-
-spec/dummy/tmp/*
-spec/dummy/log/*.log
+/spec/dummy/tmp/
+/spec/dummy/log/

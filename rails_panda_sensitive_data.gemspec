@@ -3,17 +3,21 @@ $LOAD_PATH.push File.expand_path("lib", __dir__)
 require "rails_panda_sensitive_data/version"
 
 Gem::Specification.new do |spec|
-  spec.required_ruby_version = ">= 3.2"
-
   spec.name = "rails-panda-sensitive-data"
   spec.version = RailsPanda::SensitiveData::VERSION
   spec.authors = ["João Saraiva"]
   spec.email = ["panda@bigbadpanda.com"]
-  spec.homepage = "https://github.com/bigbadpanda-tech/rails-panda-sensitive-data"
+
   spec.summary = "Code that Rails applications use for dealing with sensitive data (e.g., GDPR)."
   spec.description = "Code that Rails applications use for dealing with sensitive data (e.g., GDPR)."
+  spec.homepage = "https://github.com/bigbadpanda-tech/rails-panda-sensitive-data"
   spec.license = "MIT"
+  spec.required_ruby_version = ">= 3.2"
+
   spec.metadata["rubygems_mfa_required"] = "true"
+  spec.metadata["homepage_uri"] = spec.homepage
+  spec.metadata["source_code_uri"] = spec.homepage
+  spec.metadata["changelog_uri"] = "#{spec.homepage}/blob/develop/CHANGELOG.md"
 
   spec.files = Dir[
     "lib/**/*",

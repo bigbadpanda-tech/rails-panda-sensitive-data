@@ -25,14 +25,14 @@ inherit_gem:
 # Global options
 AllCops:
   Exclude:
-    - "spec/dummy/**/*"
+    - 'spec/dummy/**/*'
   TargetRubyVersion: 3.2
   NewCops: enable
 
 ################################################################################
 
 Metrics:
-  Enabled: true
+  Enabled: true # Metrics cops are disabled in Standard by default
 
 RSpec/ExampleLength:
   Enabled: false
