@@ -1,33 +1,33 @@
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: "weekly"
-      day: "saturday"
+      interval: weekly
+      day: saturday
     labels:
-      - "dependencies"
-      - "github-actions"
-  - package-ecosystem: "bundler"
-    directory: "/"
+      - dependencies
+      - github-actions
+  - package-ecosystem: bundler
+    directory: /
     schedule:
-      interval: "weekly"
-      day: "saturday"
+      interval: weekly
+      day: saturday
     labels:
-      - "dependencies"
-      - "ruby"
+      - dependencies
+      - ruby
     groups:
       ruby-security:
         applies-to: security-updates
         update-types:
-          - "patch"
-          - "minor"
+          - patch
+          - minor
         patterns:
-          - "*"
+          - '*'
       ruby-version:
         applies-to: version-updates
         update-types:
-          - "patch"
-          - "minor"
+          - patch
+          - minor
         patterns:
-          - "*"
+          - '*'
